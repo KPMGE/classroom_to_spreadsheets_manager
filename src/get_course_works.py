@@ -1,4 +1,5 @@
 import requests
+import json
 
 # Route to list courses IDs
 req = requests.get('http://127.0.0.1:3333/api/courses')
@@ -7,8 +8,10 @@ req = requests.get('http://127.0.0.1:3333/api/courses')
 id = req.json()[0]['id']
 
 # Route to list course works
-req2 = requests.get(f'http://127.0.0.1:3333/api/course-works/{id}').json()
+req2 = requests.get(f'http://127.0.0.1:3333/api/course-works/{id}').text
+req2 = json.loads(req2)
 
-req3 = requests.get(f'http://127.0.0.1:3333/api/students/{id}').json()
+req3 = requests.get(f'http://127.0.0.1:3333/api/students/{id}').text
 
+# print(req3)
 size = len(req3)

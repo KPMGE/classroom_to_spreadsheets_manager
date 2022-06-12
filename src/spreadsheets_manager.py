@@ -1,17 +1,14 @@
 from __future__ import print_function
 
 import os.path
-import json
 import numpy as np
 from pprint import pprint
-import requests
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
@@ -43,16 +40,23 @@ def main():
 
     #========================================Data management=========================================#
 
-    try:
+    
+    try:    # connect to google sheets
+        
         service = build('sheets', 'v4', credentials=creds)
-
-        # Call the Sheets API
         sheet = service.spreadsheets()
+
+    except HttpError as err:
+        print(err)
+
+    # ===================================================================#
+
+    try:    # get data
+
         result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
                                     range='Página1!A1:B5').execute()
-                                    
-        values = result.get('values', [])
 
+        values = result.get('values', [])
         print(values)
 
     except HttpError as err:
@@ -60,8 +64,7 @@ def main():
 
     # =============================================================================== #
 
-    # Another try to post data
-    try:
+    try:    # post data
 
         import get_course_works
         list = get_course_works.req2
@@ -99,15 +102,11 @@ def main():
 
         pprint(response)
 
+
     except HttpError as err:
         print(err)
 
-
-#===========================================================================================    
+#============================================main=============================================    
 
 if __name__ == '__main__':
-    main()
-
-
-# Se o codigo nao funcionar, voltar a gerar arquivo e ler os dados do arquivo 
-# O codigo nao está transpondo a matriz quando é passado direto 
+    main() 
