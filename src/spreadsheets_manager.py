@@ -102,6 +102,11 @@ def main():
 
         pprint(response)
 
+        
+        #request to updateCells
+        # request = sheet.batchUpdate(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=body)
+        # response = request.execute()
+        # pprint(response)
 
     except HttpError as err:
         print(err)
