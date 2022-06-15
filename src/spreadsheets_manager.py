@@ -10,10 +10,23 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+import paintCell
+
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
 #====spreadsheet ID (You can find this ID on spreadsheet link)
 SAMPLE_SPREADSHEET_ID = '1si98UZlpeTOpPvuqHYaYocnOvOnHQGonG8k9jgrWm6k'
+
+
+def updateCell(line, column, sheet):
+    
+    paintCell.body["requests"][0]["updateCells"]["start"]["rowIndex"] = line
+    paintCell.body["requests"][0]["updateCells"]["start"]["columnIndex"] = column
+
+    # request to updateCells
+    request = sheet.batchUpdate(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=paintCell.body)
+    response = request.execute()
+    pprint(response)
 
 
 def main():
@@ -49,51 +62,47 @@ def main():
     except HttpError as err:
         print(err)
 
-    # ===================================================================#
-
-    try:    # get data
-
-        result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
-                                    range='Página1!A1:B5').execute()
-
-        values = result.get('values', [])
-        print(values)
-
-    except HttpError as err:
-        print(err)
-
     # =============================================================================== #
 
     try:    # post data
 
+        # importing requests from go-api
         import get_course_works
         list = get_course_works.req2
 
         # declaring arrays
-        line = []
+        line = [] # single line
         lines =[] # matrix
 
-        for works in list:
 
+        for j,works in enumerate(list):
+            
+            # creating new line to new work
             line = []
             line.append(works['title'])
 
 
-            for students in works['submissions']:
-                line.append(students['student']['name'])
+            for i,student in enumerate(works['submissions']):
+                line.append(student['student']['name'])             #appending student name to line
+                
 
+                if(student["late"]):
+                    updateCell((i+1),j,sheet)   # assigning a different color to late works
+
+            # filling void fields to transpose matrix
             if len(line) < get_course_works.size:
                 for i in range (get_course_works.size - len(line)):
-                    line.append(' ')
+                    line.append(' ')  
 
+            # appending new line to matrix
             lines.append(line)
             
-
+        # using numpy to transpose matrix
         matrix = np.array(lines, dtype=object)
         matrix = matrix.transpose()
         matrix = matrix.tolist()
 
-
+        # putting students names in to sheet
         result = sheet.values().update(spreadsheetId=SAMPLE_SPREADSHEET_ID,
             range='Página1!A1', valueInputOption="USER_ENTERED", 
             body = {"values": matrix})
@@ -102,11 +111,6 @@ def main():
 
         pprint(response)
 
-        
-        #request to updateCells
-        # request = sheet.batchUpdate(spreadsheetId=SAMPLE_SPREADSHEET_ID, body=body)
-        # response = request.execute()
-        # pprint(response)
 
     except HttpError as err:
         print(err)
