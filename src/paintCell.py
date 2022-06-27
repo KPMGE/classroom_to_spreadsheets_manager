@@ -13,7 +13,7 @@ body = {
                                         }
                                     },
                                     "userEnteredValue":{
-                                        "stringValue": "Jaozim"
+                                        "stringValue": ""
                                     }
                                 }
                             ]
