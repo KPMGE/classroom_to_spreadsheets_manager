@@ -11,9 +11,6 @@ body = {
                                             "green": 0.37,
                                             "blue": 0.56
                                         }
-                                    },
-                                    "userEnteredValue":{
-                                        "stringValue": ""
                                     }
                                 }
                             ]
