@@ -14,9 +14,11 @@ SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 import paintCell
 
 class SpreadSheet: 
+
     def __init__(self, credentials_file, token_file):
         self.credentials_file = credentials_file
         self.token_file = token_file
+
 
     def __update_cell(self, line, column, sheet_id):
         paintCell.body["requests"][0]["updateCells"]["start"]["rowIndex"] = line
@@ -24,8 +26,8 @@ class SpreadSheet:
 
         # request to updateCells
         request = self.sheet.batchUpdate(spreadsheetId=sheet_id, body=paintCell.body)
-        response = request.execute()
-        pprint(response)
+        request.execute()
+
 
     def save_course_works(self, sheet_id, course_works, all_students): 
         # declaring arrays
@@ -60,10 +62,8 @@ class SpreadSheet:
         result = self.sheet.values().update(spreadsheetId=sheet_id,
             range='Página1!A1', valueInputOption="USER_ENTERED", 
             body = {"values": matrix})
+        result.execute()
 
-        response = result.execute()
-
-        pprint(response)
 
     def authorize(self): 
         creds = None
@@ -90,3 +90,39 @@ class SpreadSheet:
 
         except HttpError as err:
             print(err)
+    
+
+    def __get_works_amount(self, student_id, course_works):
+
+        count = 0
+        for works in course_works:
+            for submission in works['submissions']:
+                if student_id == submission['student']['id']:
+                    count+=1
+        return count
+
+
+    def __calculate_percentage(self, total_exercises, returned_exercises):
+        return (returned_exercises/total_exercises) * 100
+
+
+    def list_all(self, sheet_id, all_students, course_works):
+
+        matrix = []
+        title = ['TODOS OS ALUNOS', 'EXERCÍCIOS CONCLUÍDOS', 'PORCENTAGEM']
+
+        for student in all_students:
+
+            name = student['name']
+            amount = self.__get_works_amount(student['id'], course_works)
+            percentage = self.__calculate_percentage(len(course_works), amount)
+            percentage = round(percentage,2)    
+            matrix.append([name, amount, f'{percentage}%'])
+            matrix.sort()
+           
+        matrix.insert(0, title)
+
+        result = self.sheet.values().update(spreadsheetId=sheet_id,
+            range='Página2!A1', valueInputOption="USER_ENTERED", 
+            body = {"values": matrix})
+        result.execute()
