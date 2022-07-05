@@ -26,13 +26,12 @@ response = requests.get(f'http://127.0.0.1:3333/api/students/{chosen_course_id}'
 all_students = json.loads(response)
 
 
-spreadsheet = SpreadSheet('client_secret.json', 'token.json')
+spreadsheet = SpreadSheet('client_secret.json', 'token.json', spreadsheet_id)
 spreadsheet.authorize()
 print('saving course works into your spreadsheet...')
-spreadsheet.save_course_works(spreadsheet_id, course_works, all_students)
+spreadsheet.save_course_works(course_works, all_students)
 
-
-spreadsheet.list_all(spreadsheet_id, all_students, course_works)
+spreadsheet.list_all_students(all_students, course_works)
 
 
 print('all done!')

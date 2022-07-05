@@ -13,32 +13,38 @@ from googleapiclient.errors import HttpError
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 import paintCell
 import addSheet
+import adjustColumns
 
 class SpreadSheet: 
 
-    def __init__(self, credentials_file, token_file):
+    def __init__(self, credentials_file, token_file, spreadsheetId):
         self.credentials_file = credentials_file
         self.token_file = token_file
+        self.spreadsheetId = spreadsheetId
 
 
-    def __update_cell(self, line, column, sheet_id):
+    def __update_cell(self, line, column):
         paintCell.body["requests"][0]["updateCells"]["start"]["rowIndex"] = line
         paintCell.body["requests"][0]["updateCells"]["start"]["columnIndex"] = column
 
         # request to updateCells
-        request = self.sheet.batchUpdate(spreadsheetId=sheet_id, body=paintCell.body)
+        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=paintCell.body)
         request.execute()
 
 
-    def __create_sheet(self, sheet_id, page_name):
+    def __create_sheet(self, page_name):
         addSheet.body['requests'][0]['addSheet']['properties']['title'] = page_name
-        request = self.sheet.batchUpdate(spreadsheetId=sheet_id, body=addSheet.body)
+        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=addSheet.body)
+        response = request.execute()
+        page_id = response['replies'][0]['addSheet']['properties']['sheetId']
+        return  page_id
 
+    def __adjust_columns(self, page_id): 
+        adjustColumns.body['requests'][0]['autoResizeDimensions']['dimensions']['sheetId'] = page_id
+        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body)
         request.execute()
-        print(request)
 
-
-    def save_course_works(self, sheet_id, course_works, all_students): 
+    def save_course_works(self, course_works, all_students): 
         # declaring arrays
         line  = [] # single line
         lines = [] # matrix
@@ -52,7 +58,7 @@ class SpreadSheet:
                 line.append(student['student']['name'])             #appending student name to line
                 
                 if(student["late"]):
-                    self.__update_cell((i+1),j,sheet_id)
+                    self.__update_cell((i+1),j)
 
             # filling void fields to transpose matrix
             if len(line) < len(all_students):
@@ -68,10 +74,14 @@ class SpreadSheet:
         matrix = matrix.tolist()
 
         # putting students names in to sheet
-        result = self.sheet.values().update(spreadsheetId=sheet_id,
-            range='Página1!A1', valueInputOption="USER_ENTERED", 
+        result = self.sheet.values().update(
+            spreadsheetId=self.spreadsheetId,
+            range='Página1!A1',
+            valueInputOption="USER_ENTERED", 
             body = {"values": matrix})
         result.execute()
+
+        self.__adjust_columns('0')
 
 
     def authorize(self): 
@@ -115,7 +125,7 @@ class SpreadSheet:
         return (returned_exercises/total_exercises) * 100
 
 
-    def list_all(self, sheet_id, all_students, course_works):
+    def list_all_students(self, all_students, course_works):
 
         matrix = []
         title = ['TODOS OS ALUNOS', 'EXERCÍCIOS CONCLUÍDOS', 'PORCENTAGEM']
@@ -133,9 +143,13 @@ class SpreadSheet:
 
         page_name = 'RESULTADOS'
 
-        self.__create_sheet(sheet_id, page_name)
+        page_id = self.__create_sheet(page_name)
 
-        result = self.sheet.values().update(spreadsheetId=sheet_id,
-            range=f'{page_name}!A1', valueInputOption="USER_ENTERED", 
+        result = self.sheet.values().update(
+            spreadsheetId=self.spreadsheetId,
+            range=f'{page_name}!A1',
+            valueInputOption="USER_ENTERED", 
             body = {"values": matrix})
         result.execute()
+
+        self.__adjust_columns(page_id)
