@@ -11,9 +11,11 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
+
 import paintCell
 import addSheet
 import adjustColumns
+import formatHeader
 
 class SpreadSheet: 
 
@@ -39,12 +41,19 @@ class SpreadSheet:
         page_id = response['replies'][0]['addSheet']['properties']['sheetId']
         return  page_id
 
+
     def __adjust_columns(self, page_id): 
         adjustColumns.body['requests'][0]['autoResizeDimensions']['dimensions']['sheetId'] = page_id
         request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body)
         request.execute()
 
+
+    def __format_header(self):
+        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body)
+        request.execute()
+
     def save_course_works(self, course_works, all_students): 
+
         # declaring arrays
         line  = [] # single line
         lines = [] # matrix
@@ -82,6 +91,7 @@ class SpreadSheet:
         result.execute()
 
         self.__adjust_columns('0')
+        self.__format_header()
 
 
     def authorize(self): 
@@ -112,7 +122,6 @@ class SpreadSheet:
     
 
     def __get_works_amount(self, student_id, course_works):
-
         count = 0
         for works in course_works:
             for submission in works['submissions']:
@@ -126,9 +135,8 @@ class SpreadSheet:
 
 
     def list_all_students(self, all_students, course_works):
-
         matrix = []
-        title = ['TODOS OS ALUNOS', 'EXERCÍCIOS CONCLUÍDOS', 'PORCENTAGEM']
+        title = ['ALUNOS', 'EXERCÍCIOS', 'PORCENTAGEM']
 
         for student in all_students:
 
