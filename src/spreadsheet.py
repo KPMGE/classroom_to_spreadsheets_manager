@@ -12,6 +12,7 @@ from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 import paintCell
+import addSheet
 
 class SpreadSheet: 
 
@@ -27,6 +28,14 @@ class SpreadSheet:
         # request to updateCells
         request = self.sheet.batchUpdate(spreadsheetId=sheet_id, body=paintCell.body)
         request.execute()
+
+
+    def __create_sheet(self, sheet_id, page_name):
+        addSheet.body['requests'][0]['addSheet']['properties']['title'] = page_name
+        request = self.sheet.batchUpdate(spreadsheetId=sheet_id, body=addSheet.body)
+
+        request.execute()
+        print(request)
 
 
     def save_course_works(self, sheet_id, course_works, all_students): 
@@ -122,7 +131,11 @@ class SpreadSheet:
            
         matrix.insert(0, title)
 
+        page_name = 'RESULTADOS'
+
+        self.__create_sheet(sheet_id, page_name)
+
         result = self.sheet.values().update(spreadsheetId=sheet_id,
-            range='Página2!A1', valueInputOption="USER_ENTERED", 
+            range=f'{page_name}!A1', valueInputOption="USER_ENTERED", 
             body = {"values": matrix})
         result.execute()
