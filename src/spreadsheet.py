@@ -44,13 +44,12 @@ class SpreadSheet:
 
     def __adjust_columns(self, page_id): 
         adjustColumns.body['requests'][0]['autoResizeDimensions']['dimensions']['sheetId'] = page_id
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body)
-        request.execute()
+        response = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body).execute()
 
 
-    def __format_header(self):
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body)
-        request.execute()
+    def __format_header(self, size_header):
+        formatHeader.body['requests'][0]['repeatCell']['range']['endColumnIndex'] = size_header
+        response = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body).execute()
 
     def save_course_works(self, course_works, all_students): 
 
@@ -91,7 +90,7 @@ class SpreadSheet:
         result.execute()
 
         self.__adjust_columns('0')
-        self.__format_header()
+        self.__format_header(len(course_works))
 
 
     def authorize(self): 
