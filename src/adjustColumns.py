@@ -3,7 +3,7 @@ body = {
     {
       "autoResizeDimensions": {
         "dimensions": {
-          "sheetId": "0",
+          "sheetId": "",
           "dimension": "COLUMNS",
           "startIndex": 0,
           "endIndex": 7

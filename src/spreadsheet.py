@@ -30,26 +30,24 @@ class SpreadSheet:
         paintCell.body["requests"][0]["updateCells"]["start"]["columnIndex"] = column
 
         # request to updateCells
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=paintCell.body)
-        request.execute()
+        self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=paintCell.body).execute()
 
 
     def __create_sheet(self, page_name):
         addSheet.body['requests'][0]['addSheet']['properties']['title'] = page_name
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=addSheet.body)
-        response = request.execute()
+        response = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=addSheet.body).execute()
         page_id = response['replies'][0]['addSheet']['properties']['sheetId']
         return  page_id
 
-
     def __adjust_columns(self, page_id): 
         adjustColumns.body['requests'][0]['autoResizeDimensions']['dimensions']['sheetId'] = page_id
-        response = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body).execute()
+        self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body).execute()
 
-
-    def __format_header(self, size_header):
+    def __format_header(self, size_header, page_id):
         formatHeader.body['requests'][0]['repeatCell']['range']['endColumnIndex'] = size_header
-        response = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body).execute()
+        formatHeader.body['requests'][1]['updateSheetProperties']['properties']['sheetId'] = page_id
+        formatHeader.body['requests'][0]['repeatCell']['range']['sheetId'] = page_id
+        self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body).execute()
 
     def save_course_works(self, course_works, all_students): 
 
@@ -63,7 +61,7 @@ class SpreadSheet:
             line.append(works['title'])
 
             for i, student in enumerate(works['submissions']):
-                line.append(student['student']['name'])             #appending student name to line
+                line.append('  ' + student['student']['name'] + '  ')             #appending student name to line
                 
                 if(student["late"]):
                     self.__update_cell((i+1),j)
@@ -90,7 +88,7 @@ class SpreadSheet:
         result.execute()
 
         self.__adjust_columns('0')
-        self.__format_header(len(course_works))
+        self.__format_header(len(course_works), '0')
 
 
     def authorize(self): 
@@ -135,7 +133,7 @@ class SpreadSheet:
 
     def list_all_students(self, all_students, course_works):
         matrix = []
-        title = ['ALUNOS', 'EXERCÍCIOS', 'PORCENTAGEM']
+        title = ['ALUNOS', '   EXERCÍCIOS   ', '    PORCENTAGEM   ']
 
         for student in all_students:
 
@@ -160,3 +158,4 @@ class SpreadSheet:
         result.execute()
 
         self.__adjust_columns(page_id)
+        self.__format_header(3, page_id)

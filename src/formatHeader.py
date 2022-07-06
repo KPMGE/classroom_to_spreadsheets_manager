@@ -33,7 +33,7 @@ body = {
     {
       "updateSheetProperties": {
         "properties": {
-          "sheetId": '0',
+          "sheetId": '',
           "gridProperties": {
             "frozenRowCount": 1
           }
