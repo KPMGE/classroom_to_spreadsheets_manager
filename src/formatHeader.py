@@ -12,9 +12,9 @@ body = {
         "cell": {
           "userEnteredFormat": {
             "backgroundColor": {
-              "red": 0.0,
-              "green": 0.0,
-              "blue": 0.0
+              "red": 0.203,
+              "green": 0.196,
+              "blue": 0.239
             },
             "horizontalAlignment" : "CENTER",
             "textFormat": {

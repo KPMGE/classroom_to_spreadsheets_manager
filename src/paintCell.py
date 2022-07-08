@@ -7,9 +7,9 @@ body = {
                             {
                                 "userEnteredFormat": {
                                     "backgroundColor":{
-                                        "red": 0.86,
-                                        "green": 0.37,
-                                        "blue": 0.56
+                                        "red": 0.976,
+                                        "green": 0.349,
+                                        "blue": 0.36
                                         }
                                     }
                                 }

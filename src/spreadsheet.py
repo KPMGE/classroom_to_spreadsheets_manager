@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os.path
 import numpy as np
-from pprint import pprint
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -18,7 +17,6 @@ import adjustColumns
 import formatHeader
 
 class SpreadSheet: 
-
     def __init__(self, credentials_file, token_file, spreadsheetId):
         self.credentials_file = credentials_file
         self.token_file = token_file
@@ -50,7 +48,6 @@ class SpreadSheet:
         self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body).execute()
 
     def save_course_works(self, course_works, all_students): 
-
         # declaring arrays
         line  = [] # single line
         lines = [] # matrix
@@ -61,7 +58,8 @@ class SpreadSheet:
             line.append(works['title'])
 
             for i, student in enumerate(works['submissions']):
-                line.append('  ' + student['student']['name'] + '  ')             #appending student name to line
+                # appends student name to the matrix
+                line.append('  ' + student['student']['name'] + '  ')
                 
                 if(student["late"]):
                     self.__update_cell((i+1),j)
@@ -133,11 +131,10 @@ class SpreadSheet:
 
     def list_all_students(self, all_students, course_works):
         matrix = []
-        title = ['ALUNOS', '   EXERCÍCIOS   ', '    PORCENTAGEM   ']
+        title = ['ALUNOS', '   EXERCÍCIOS CONCLUÍDOS   ', '    PORCENTAGEM   ']
 
         for student in all_students:
-
-            name = student['name']
+            name = '  ' + student['name'] + '  '
             amount = self.__get_works_amount(student['id'], course_works)
             percentage = self.__calculate_percentage(len(course_works), amount)
             percentage = round(percentage,2)    
@@ -145,9 +142,7 @@ class SpreadSheet:
             matrix.sort()
            
         matrix.insert(0, title)
-
         page_name = 'RESULTADOS'
-
         page_id = self.__create_sheet(page_name)
 
         result = self.sheet.values().update(
