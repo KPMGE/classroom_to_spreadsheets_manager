@@ -2,7 +2,6 @@ from __future__ import print_function
 
 import os.path
 import numpy as np
-from pprint import pprint
 
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
@@ -18,7 +17,6 @@ import adjustColumns
 import formatHeader
 
 class SpreadSheet: 
-
     def __init__(self, credentials_file, token_file, spreadsheetId):
         self.credentials_file = credentials_file
         self.token_file = token_file
@@ -30,30 +28,26 @@ class SpreadSheet:
         paintCell.body["requests"][0]["updateCells"]["start"]["columnIndex"] = column
 
         # request to updateCells
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=paintCell.body)
-        request.execute()
+        self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=paintCell.body).execute()
 
 
     def __create_sheet(self, page_name):
         addSheet.body['requests'][0]['addSheet']['properties']['title'] = page_name
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=addSheet.body)
-        response = request.execute()
+        response = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=addSheet.body).execute()
         page_id = response['replies'][0]['addSheet']['properties']['sheetId']
         return  page_id
 
-
     def __adjust_columns(self, page_id): 
         adjustColumns.body['requests'][0]['autoResizeDimensions']['dimensions']['sheetId'] = page_id
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body)
-        request.execute()
+        self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=adjustColumns.body).execute()
 
-
-    def __format_header(self):
-        request = self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body)
-        request.execute()
+    def __format_header(self, size_header, page_id):
+        formatHeader.body['requests'][0]['repeatCell']['range']['endColumnIndex'] = size_header
+        formatHeader.body['requests'][1]['updateSheetProperties']['properties']['sheetId'] = page_id
+        formatHeader.body['requests'][0]['repeatCell']['range']['sheetId'] = page_id
+        self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=formatHeader.body).execute()
 
     def save_course_works(self, course_works, all_students): 
-
         # declaring arrays
         line  = [] # single line
         lines = [] # matrix
@@ -64,7 +58,8 @@ class SpreadSheet:
             line.append(works['title'])
 
             for i, student in enumerate(works['submissions']):
-                line.append(student['student']['name'])             #appending student name to line
+                # appends student name to the matrix
+                line.append('  ' + student['student']['name'] + '  ')
                 
                 if(student["late"]):
                     self.__update_cell((i+1),j)
@@ -91,7 +86,7 @@ class SpreadSheet:
         result.execute()
 
         self.__adjust_columns('0')
-        self.__format_header()
+        self.__format_header(len(course_works), '0')
 
 
     def authorize(self): 
@@ -136,11 +131,10 @@ class SpreadSheet:
 
     def list_all_students(self, all_students, course_works):
         matrix = []
-        title = ['ALUNOS', 'EXERCÍCIOS', 'PORCENTAGEM']
+        title = ['ALUNOS', '   EXERCÍCIOS CONCLUÍDOS   ', '    PORCENTAGEM   ']
 
         for student in all_students:
-
-            name = student['name']
+            name = '  ' + student['name'] + '  '
             amount = self.__get_works_amount(student['id'], course_works)
             percentage = self.__calculate_percentage(len(course_works), amount)
             percentage = round(percentage,2)    
@@ -148,9 +142,7 @@ class SpreadSheet:
             matrix.sort()
            
         matrix.insert(0, title)
-
         page_name = 'RESULTADOS'
-
         page_id = self.__create_sheet(page_name)
 
         result = self.sheet.values().update(
@@ -161,3 +153,4 @@ class SpreadSheet:
         result.execute()
 
         self.__adjust_columns(page_id)
+        self.__format_header(3, page_id)
