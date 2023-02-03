@@ -11,7 +11,9 @@ from googleapiclient.errors import HttpError
 
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 
-import paintCell
+#### DEPRACATED ####
+# import paintCell
+####################
 import addSheet
 import adjustColumns
 import formatHeader
@@ -22,14 +24,14 @@ class SpreadSheet:
         self.token_file = token_file
         self.spreadsheetId = spreadsheetId
 
+    ############################## DEPRACATED ####################################################
+    # def __update_cell(self, line, column):
+    #     paintCell.body["requests"][0]["updateCells"]["start"]["rowIndex"] = line
+    #     paintCell.body["requests"][0]["updateCells"]["start"]["columnIndex"] = column
 
-    def __update_cell(self, line, column):
-        paintCell.body["requests"][0]["updateCells"]["start"]["rowIndex"] = line
-        paintCell.body["requests"][0]["updateCells"]["start"]["columnIndex"] = column
-
-        # request to updateCells
-        self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=paintCell.body).execute()
-
+    #     # request to updateCells
+    #     self.sheet.batchUpdate(spreadsheetId=self.spreadsheetId, body=paintCell.body).execute()
+    ##############################################################################################
 
     def __create_sheet(self, page_name):
         addSheet.body['requests'][0]['addSheet']['properties']['title'] = page_name
@@ -61,8 +63,10 @@ class SpreadSheet:
                 # appends student name to the matrix
                 line.append('  ' + student['student']['name'] + '  ')
                 
-                if(student["late"]):
-                    self.__update_cell((i+1),j)
+                ################################## DEPRACATED ####################################
+                # if(student["late"]):
+                #     self.__update_cell((i+1),j)
+                ##################################################################################
 
             # filling void fields to transpose matrix
             if len(line) < len(all_students):
