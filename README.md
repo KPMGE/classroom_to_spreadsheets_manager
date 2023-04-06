@@ -1,2 +1,2 @@
-# classroom_to_spreadsheets_manager
-Code to send data from google classroom to google spreadsheets in different accounts
+# monitoring-spreadsheet-script
+Code to send data from [this](https://github.com/vortex2jm/classroom-monitor-golang) api to google sheets 
